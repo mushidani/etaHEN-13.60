@@ -9,12 +9,6 @@ This build fixes the PS4 launch-context issue on **retail PS5 firmware 13.60** t
 [![Downloads](https://img.shields.io/github/downloads/mushidani/etaHEN-13.60/total?label=Downloads)](https://github.com/mushidani/etaHEN-13.60/releases/latest)
 [![Latest Release](https://img.shields.io/github/v/release/mushidani/etaHEN-13.60?label=Latest%20Release)](https://github.com/mushidani/etaHEN-13.60/releases/latest)
 
-## Download
-
-[⬇️ Download Latest Release](https://github.com/mushidani/etaHEN-13.60/releases/latest)
-
-[⬇️ Direct ELF Download](https://github.com/mushidani/etaHEN-13.60/releases/latest/download/etaHEN-13.60-working-aaf921e.elf)
-
 ## What was fixed
 
 The original etaHEN 2.5B Unified build bundled **kstuff-lite v1.11**.
@@ -64,6 +58,12 @@ Commit: aaf921e608c9a3aaff753d92d4b3b16d2724b32d
 Do **not** load standalone kstuff before or after loading this etaHEN build.
 
 Loading multiple kstuff instances may cause instability or freezes.
+
+## Download
+
+[⬇️ Download Latest Release](https://github.com/mushidani/etaHEN-13.60/releases/latest)
+
+[⬇️ Direct ELF Download](https://github.com/mushidani/etaHEN-13.60/releases/latest/download/etaHEN-13.60.elf)
 
 ## Installation
 
