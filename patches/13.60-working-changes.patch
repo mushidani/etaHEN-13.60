@@ -1,0 +1,296 @@
+diff --git a/Source Code/bootstrapper/source/main.cpp b/Source Code/bootstrapper/source/main.cpp
+index 87bc317..d6e216d 100644
+--- a/Source Code/bootstrapper/source/main.cpp	
++++ b/Source Code/bootstrapper/source/main.cpp	
+@@ -437,7 +437,7 @@ static void cleanup(void);
+   uint8_t* get_kstuff_address(bool& require_cleanup) {
+ #ifdef ETAHEN_PORT_1360
+       // A leftover /data/etaHEN/kstuff.elf may target an older firmware.
+-      // This build pins the embedded kstuff-lite v1.11 by SHA256.
++      // This build pins the embedded kstuff-lite aaf921e by SHA256.
+       require_cleanup = false;
+       return kstuff_start;
+ #else
+@@ -811,7 +811,7 @@ int main(void) {
+   }
+   const auto* diagnostic_profile=snipers_firmware_profile(kernel_get_fw_version());
+   char profile_detail[512];
+-  snprintf(profile_detail,sizeof profile_detail,"profile=%s allproc=%lx security=%lx rootvnode=%lx textDelta=%lx sysentvec=%lx sysentvecPs4=%lx crypt=%lx sysents=%lx sysentsPs4=%lx pager=%lx kstuff=v1.11",
++  snprintf(profile_detail,sizeof profile_detail,"profile=%s allproc=%lx security=%lx rootvnode=%lx textDelta=%lx sysentvec=%lx sysentvecPs4=%lx crypt=%lx sysents=%lx sysentsPs4=%lx pager=%lx kstuff=aaf921e",
+     diagnostic_profile->name,diagnostic_profile->allproc,diagnostic_profile->security,diagnostic_profile->rootvnode,diagnostic_profile->textDelta,diagnostic_profile->sysentvec,diagnostic_profile->sysentvecPs4,diagnostic_profile->cryptSingletonArray,diagnostic_profile->sysents,diagnostic_profile->sysentsPs4,diagnostic_profile->pagerTable);
+   port_stage("bootstrap",profile_detail);
+   const pid_t existing_etahen = find_pid("etaHEN");
+diff --git a/Source Code/shellui/assets/etaHEN_toolbox.xml b/Source Code/shellui/assets/etaHEN_toolbox.xml
+index f25c2b8..ceb7190 100644
+--- a/Source Code/shellui/assets/etaHEN_toolbox.xml	
++++ b/Source Code/shellui/assets/etaHEN_toolbox.xml	
+@@ -45,7 +45,7 @@
+ 
+           <!-- Kstuff menu -->
+         <setting_list id="id_kstuff_opts" title="Kstuff Menu" initial_focus_to="id_kstuff_autoload">
+-            <label id="id_kstuff_build_info" title="Bundled kstuff-lite v1.11 for 13.60" style="left"/>
++            <label id="id_kstuff_build_info" title="Bundled kstuff-lite aaf921e for 13.60" style="left"/>
+             <label id="id_kstuff_control_info" title="Keep kstuff-lite active. Legacy pause controls do not apply." style="left"/>
+             <label id="id_kstuff_update_info" title="Update etaHEN to update its bundled kstuff." style="left"/>
+             <toggle_switch id="id_kstuff_autoload" title="Auto load Kstuff on etaHEN startup"  value="0"/>
+diff --git a/Source Code/util/source/msg.cpp b/Source Code/util/source/msg.cpp
+index f13a385..be20caa 100644
+--- a/Source Code/util/source/msg.cpp	
++++ b/Source Code/util/source/msg.cpp	
+@@ -573,7 +573,7 @@ void handleIPC(struct clientArgs *client, std::string &inputStr,
+ #ifdef ETAHEN_PORT_1360
+       // This port deliberately ignores external kstuff. Do not fetch a
+       // different project's "latest" asset and report a fictitious upgrade.
+-      notify(true, "13.60 uses bundled kstuff-lite v1.11. Update etaHEN to change kstuff.");
++      notify(true, "13.60 uses bundled kstuff-lite aaf921e. Update etaHEN to change kstuff.");
+       reply(sender_app, true);
+ #else
+       notify(true, "Attempting to Download kstuff ...");
+diff --git a/scripts/build-all.mjs b/scripts/build-all.mjs
+index fd26918..470540f 100644
+--- a/scripts/build-all.mjs
++++ b/scripts/build-all.mjs
+@@ -4,7 +4,7 @@ import path from 'node:path';
+ run(['cc',...common,'-c',path.join(root,'port/abi-check.cpp'),'-o',path.join(root,'build/abi-check.o')]);
+ for(const args of [
+  ['scripts/build-limiter-gate.mjs'],
+- ['--test','tests/*.test.mjs'],
++ ['--test','--test-concurrency=1','tests/*.test.mjs'],
+  ['scripts/build-core.mjs'],['scripts/build-shellui.mjs'],
+  ['scripts/build-native-fps.mjs'],['scripts/build-bc-fps.mjs'],['scripts/build-services.mjs','daemon'],
+  ['scripts/build-services.mjs','util'],['scripts/build-toolbox-card.mjs'],['scripts/build-private-watch.mjs'],['scripts/build-bootstrapper.mjs'],
+diff --git a/scripts/build-bootstrapper.mjs b/scripts/build-bootstrapper.mjs
+index 39353f3..f1bbd99 100644
+--- a/scripts/build-bootstrapper.mjs
++++ b/scripts/build-bootstrapper.mjs
+@@ -13,7 +13,7 @@ const shellManifest=JSON.parse(await readFile(path.join(root,trace?'build/shellu
+ if(shellManifest.prepareOnly!==false)throw Error('Rebuild ShellUI without ETAHEN_PORT_PREPARE_ONLY before packaging the full payload');
+ if(shellManifest.probeHooks)throw Error('Rebuild ShellUI without the temporary hook probe before packaging the full payload');
+ const kstuff=path.join(source,'bootstrapper/assets/kstuff.elf');
+-if(createHash('sha256').update(await readFile(kstuff)).digest('hex')!=='ab9a6cb4d3b1daf139d4d646e402b1cf569071acd64599c936d7a3a6164dc779')throw Error('Expected official kstuff-lite v1.11 release asset');
++if(createHash('sha256').update(await readFile(kstuff)).digest('hex')!=='2489bf038cd818cd7b0679ac128fd03a6e10957a636f4a466843805999331933')throw Error('Expected kstuff-lite aaf921e 13.60 launch-fix asset');
+ const cardManifest=JSON.parse(await readFile(path.join(root,'build/toolbox-card-manifest.json'),'utf8'));
+ const cardPath=path.join(root,'build/toolbox-card-install.elf');
+ const cardHash=createHash('sha256').update(await readFile(cardPath)).digest('hex');
+@@ -31,4 +31,4 @@ run(['ld.lld','--no-dependent-libraries','-pie','--hash-style=gnu','-z','max-pag
+ const diagnosticHeader=await readFile(path.join(source,'include/experimental_trace.h'),'utf8');
+ const diagnosticBuild=/^#define EXPERIMENTAL_DIAGNOSTIC_BUILD "([A-Za-z0-9._-]+)"/m.exec(diagnosticHeader)?.[1];
+ if(!diagnosticBuild)throw Error('Missing experimental diagnostic build identity');
+-const data=await readFile(elf);if(!data.includes(Buffer.from(diagnosticBuild)))throw Error('Built ELF is missing its diagnostic identity');const manifest={name:'Unofficial etaHEN 2.5B multi-firmware community test',startupProfile:profile,toolboxDiagnostic:diagnostic,firmwares:JSON.parse(await readFile(path.join(root,'firmware-profiles.json'),'utf8')).firmwares.map(p=>p.firmware),channel:'experimental',diagnosticBuild,diagnosticSchema:1,bytes:data.length,sha256:createHash('sha256').update(data).digest('hex'),kstuff:'EchoStretch/kstuff-lite v1.11',hardwareValidated:false};await writeFile(path.join(root,diagnostic?diagnosticRoot+'/manifest.json':profile?'build/startup-profile/manifest.json':'build/manifest.json'),JSON.stringify(manifest,null,2));console.log(JSON.stringify(manifest));
++const data=await readFile(elf);if(!data.includes(Buffer.from(diagnosticBuild)))throw Error('Built ELF is missing its diagnostic identity');const manifest={name:'Unofficial etaHEN 2.5B multi-firmware community test',startupProfile:profile,toolboxDiagnostic:diagnostic,firmwares:JSON.parse(await readFile(path.join(root,'firmware-profiles.json'),'utf8')).firmwares.map(p=>p.firmware),channel:'experimental',diagnosticBuild,diagnosticSchema:1,bytes:data.length,sha256:createHash('sha256').update(data).digest('hex'),kstuff:'EchoStretch/kstuff-lite aaf921e (13.60 launch fix)',hardwareValidated:false};await writeFile(path.join(root,diagnostic?diagnosticRoot+'/manifest.json':profile?'build/startup-profile/manifest.json':'build/manifest.json'),JSON.stringify(manifest,null,2));console.log(JSON.stringify(manifest));
+diff --git a/scripts/build-services.mjs b/scripts/build-services.mjs
+index 91c2a75..2490e87 100644
+--- a/scripts/build-services.mjs
++++ b/scripts/build-services.mjs
+@@ -26,7 +26,7 @@ for(let file of files){const object=path.join(out,path.relative(source,file).rep
+ }
+ const libraries={fps_elf:['kernel','SceGnmDriver'],daemon:['ScePad','SceSystemService','SceNotification','SceNet','SceRegMgr','SceSysmodule','SceUserService','SceNetCtl','SceSysCore','kernel_sys','SceAppInstUtil'],util:['SceLibcInternal','SceSystemService','SceNet','SceSysmodule','SceUserService','SceNetCtl','SceSysCore','ScePad','SceVideoOut','kernel_sys','SceAppInstUtil','SceHttp2','SceSsl']}[requested];
+ const local=['libhijacker','libNidResolver','libNineS','libSelfDecryptor','libelfldr'].map(n=>path.join(root,'build/core/'+n+'.a'));
+-const external=requested==='util'?['z','curl','wolfssl','minizip','microhttpd','psl','zstd','crypto','ssl']:[];
++const external=requested==='util'?['z','curl','minizip','microhttpd','psl','zstd','crypto','ssl']:[];
+ const elf=path.join(out,requested+'.elf');
+ try{run(['ld.lld','--no-dependent-libraries','-pie','--hash-style=gnu','-z','max-page-size=0x4000','-T',path.join(sdk,'ldscripts/elf_x86_64.x'),...objects,path.join(sdk,'target/lib/crt1.o'),'-L',path.join(sdk,'target/lib'),'-L',path.join(root,'dependencies/lib'),'-L',path.join(source,'lib'),'--start-group',...local,...external.map(l=>'-l'+l),...['c++','c++abi','unwind','c'].map(l=>path.join(sdk,'target/lib/lib'+l+'.a')),'-ldl','--end-group','--no-as-needed',...libraries.map(l=>'-l'+l),'-lSceLibcInternal','-lSceNet','-o',elf]);}catch(e){await writeFile(path.join(out,'failure.txt'),e.message);console.error(e.message.slice(-9500));process.exit(1);}
+ if(requested==='fps_elf')await copyFile(elf,path.join(source,'daemon/assets/fps_elf.elf'));
+diff --git a/tests/game-arena.cpp b/tests/game-arena.cpp
+index 6b182fd..5875fe4 100644
+--- a/tests/game-arena.cpp
++++ b/tests/game-arena.cpp
+@@ -1,50 +1,150 @@
+ #include "../Source Code/include/port_game_arena.h"
+ #include <assert.h>
++#include <cstring>
++
++#ifdef _WIN32
+ #include <windows.h>
++#else
++#include <sys/mman.h>
++#include <cstdio>
++#endif
+ 
+-static int query(int,uint64_t address,size_t) {
++static int query(int, uint64_t address, size_t) {
++#ifdef _WIN32
+     MEMORY_BASIC_INFORMATION m{};
+-    assert(VirtualQuery((void*)address,&m,sizeof(m)));
+-    if(m.Protect==PAGE_EXECUTE_READ)return 5;
+-    if(m.Protect==PAGE_READWRITE)return 3;
+-    if(m.Protect==PAGE_EXECUTE_READWRITE)return 7;
++    assert(VirtualQuery((void*)address, &m, sizeof(m)));
++    if (m.Protect == PAGE_EXECUTE_READ) return 5;
++    if (m.Protect == PAGE_READWRITE) return 3;
++    if (m.Protect == PAGE_EXECUTE_READWRITE) return 7;
++    return 0;
++#else
++    FILE* f = fopen("/proc/self/maps", "r");
++    assert(f);
++
++    unsigned long start, end;
++    char perms[5]{};
++    char line[512];
++
++    while (fgets(line, sizeof(line), f)) {
++        if (sscanf(line, "%lx-%lx %4s", &start, &end, perms) == 3 &&
++            address >= start && address < end) {
++            fclose(f);
++
++            const bool r = perms[0] == 'r';
++            const bool w = perms[1] == 'w';
++            const bool x = perms[2] == 'x';
++
++            if (r && x && !w) return 5;
++            if (r && w && !x) return 3;
++            if (r && w && x) return 7;
++            return 0;
++        }
++    }
++
++    fclose(f);
+     return 0;
++#endif
+ }
+-static int split(int,uint64_t address,size_t size,int protection) {
+-    assert(size==0x4000 && protection==5);
++
++static int split(int, uint64_t address, size_t size, int protection) {
++    assert(size == 0x4000 && protection == 5);
++
++#ifdef _WIN32
+     DWORD old;
+-    return VirtualProtect((void*)address,size,PAGE_EXECUTE_READ,&old)?0:-1;
++    return VirtualProtect((void*)address, size, PAGE_EXECUTE_READ, &old) ? 0 : -1;
++#else
++    return mprotect((void*)address, size, PROT_READ | PROT_EXEC);
++#endif
+ }
++
+ int main() {
+-    auto region=(unsigned char*)VirtualAlloc(nullptr,0x8000,MEM_RESERVE|MEM_COMMIT,PAGE_READWRITE);
++#ifdef _WIN32
++    auto region = (unsigned char*)VirtualAlloc(
++        nullptr, 0x8000, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
++#else
++    auto region = (unsigned char*)mmap(
++        nullptr, 0x8000,
++        PROT_READ | PROT_WRITE,
++        MAP_PRIVATE | MAP_ANONYMOUS,
++        -1, 0);
++    if (region == MAP_FAILED) region = nullptr;
++#endif
++
+     assert(region);
+-    uint64_t base=(uintptr_t)region;
+-    // A complete one-instruction counter test in the real split mapping:
+-    // lock inc qword [rip + disp32]; ret. The counter lives in the data half.
+-    unsigned char code[]={0xf0,0x48,0xff,0x05,0xf8,0x3f,0,0,0xc3};
+-    memcpy(region,code,sizeof(code));
++    uint64_t base = (uintptr_t)region;
++
++    unsigned char code[] = {
++        0xf0, 0x48, 0xff, 0x05, 0xf8, 0x3f, 0, 0, 0xc3
++    };
++    memcpy(region, code, sizeof(code));
++
+     PortGameArenaProtection permissions;
+-    // Reproduce SDK metadata scope: a change on the first half affects the
+-    // entire unsplit VM entry. The old code accepted success and hooked it.
+-    auto wholeEntry=[](int,uint64_t address,size_t,int){
+-        DWORD old;return VirtualProtect((void*)address,0x8000,PAGE_EXECUTE_READ,&old)?0:-1;
++
++    auto wholeEntry = [](int, uint64_t address, size_t, int) {
++#ifdef _WIN32
++        DWORD old;
++        return VirtualProtect(
++            (void*)address, 0x8000, PAGE_EXECUTE_READ, &old) ? 0 : -1;
++#else
++        return mprotect(
++            (void*)address, 0x8000, PROT_READ | PROT_EXEC);
++#endif
++    };
++
++    assert(!PortSealGameArena(1, base, wholeEntry, query, permissions));
++    assert(permissions.transition == 0 &&
++           permissions.code == 5 &&
++           permissions.data == 5);
++
++#ifdef _WIN32
++    DWORD old;
++    assert(VirtualProtect(region, 0x8000, PAGE_READWRITE, &old));
++#else
++    assert(mprotect(region, 0x8000, PROT_READ | PROT_WRITE) == 0);
++#endif
++
++    assert(PortSealGameArena(1, base, split, query, permissions));
++    assert(permissions.code == 5 && permissions.data == 3);
++
++#ifdef _WIN32
++    FlushInstructionCache(GetCurrentProcess(), region, sizeof(code));
++#else
++    __builtin___clear_cache(
++        (char*)region,
++        (char*)region + sizeof(code));
++#endif
++
++    ((void(*)())region)();
++    ((void(*)())region)();
++
++    assert(*(uint64_t*)(region + 0x4000) == 2);
++
++    auto rejected = [](int, uint64_t, size_t, int) {
++        return -1;
+     };
+-    assert(!PortSealGameArena(1,base,wholeEntry,query,permissions));
+-    assert(permissions.transition==0 && permissions.code==5 && permissions.data==5);
+-    DWORD old;assert(VirtualProtect(region,0x8000,PAGE_READWRITE,&old));
+-    // Real OS mprotect semantics preserve RW data while sealing executable code.
+-    assert(PortSealGameArena(1,base,split,query,permissions));
+-    assert(permissions.code==5 && permissions.data==3);
+-    FlushInstructionCache(GetCurrentProcess(),region,sizeof(code));
+-    ((void(*)())region)();((void(*)())region)();
+-    assert(*(uint64_t*)(region+0x4000)==2);
+-    // A rejected syscall is a hard stop even if queries happen to look right.
+-    auto rejected=[](int,uint64_t,size_t,int){return -1;};
+-    assert(!PortSealGameArena(1,base,rejected,query,permissions));
+-    auto wrongCode=[](int,uint64_t address,size_t size,int){
+-        DWORD previous;return VirtualProtect((void*)address,size,PAGE_EXECUTE_READWRITE,&previous)?0:-1;
++
++    assert(!PortSealGameArena(1, base, rejected, query, permissions));
++
++    auto wrongCode = [](int, uint64_t address, size_t size, int) {
++#ifdef _WIN32
++        DWORD previous;
++        return VirtualProtect(
++            (void*)address, size,
++            PAGE_EXECUTE_READWRITE,
++            &previous) ? 0 : -1;
++#else
++        return mprotect(
++            (void*)address, size,
++            PROT_READ | PROT_WRITE | PROT_EXEC);
++#endif
+     };
+-    assert(!PortSealGameArena(1,base,wrongCode,query,permissions));
+-    assert(permissions.code==7);
+-    assert(VirtualFree(region,0,MEM_RELEASE));
++
++    assert(!PortSealGameArena(1, base, wrongCode, query, permissions));
++    assert(permissions.code == 7);
++
++#ifdef _WIN32
++    assert(VirtualFree(region, 0, MEM_RELEASE));
++#else
++    assert(munmap(region, 0x8000) == 0);
++#endif
+ }
+diff --git a/tests/prx.test.mjs b/tests/prx.test.mjs
+index 303fdc4..40c6956 100644
+--- a/tests/prx.test.mjs
++++ b/tests/prx.test.mjs
+@@ -12,7 +12,7 @@ test('manual plugin Start works without a game while automatic Start remains tit
+  implementation=implementation.slice(implementation.indexOf('static bool load_locked('),implementation.indexOf('bool port_load_game_plugin('));
+  implementation=implementation.replaceAll('open(','fake_open(').replaceAll('fstat(','fake_fstat(').replaceAll('read(','fake_read(').replaceAll('close(','fake_close(').replaceAll('struct stat','FakeStat');
+  const code=`#include <cassert>\n#include <vector>\n#include <string>\n#include <cstring>\n#include <cerrno>\n#include <cstdint>\n#include "${path.join(source,'include/port_game_plugin.hpp').replaceAll('\\','/')}"\n
+-using ssize_t=long long;struct FakeStat {unsigned st_mode=0;long long st_size=128;};
++#ifdef _WIN32\nusing ssize_t=long long;\n#endif\nstruct FakeStat {unsigned st_mode=0;long long st_size=128;};
+ #define O_RDONLY 0
+ #define O_NOFOLLOW 0
+ #define STDOUT_FILENO 1
