@@ -1,0 +1,35 @@
+{
+  "name": "Unofficial etaHEN 2.5B Unified + kstuff-lite 13.60 launch fix",
+  "etaHEN_base_commit": "89123ff",
+  "etaHEN_tag": "v2.5B-unified.1",
+  "integration_commit": "3dc4453",
+  "kstuff_repository": "EchoStretch/kstuff-lite",
+  "kstuff_commit": "aaf921e608c9a3aaff753d92d4b3b16d2724b32d",
+  "firmwares": [
+    "11.00",
+    "11.20",
+    "11.60",
+    "12.00",
+    "12.02",
+    "12.20",
+    "12.40",
+    "12.60",
+    "12.70",
+    "13.00",
+    "13.20",
+    "13.40",
+    "13.42",
+    "13.60"
+  ],
+  "tested_firmware": "13.60",
+  "hardware_validated": true,
+  "elf_filename": "etaHEN-13.60-working-aaf921e.elf",
+  "elf_size_bytes": 42795336,
+  "elf_sha256": "0cce7da6fba48665bc05633f2c6378cc711daaee86859560450cc5a236fbbd70",
+  "tests": {
+    "total": 21,
+    "passed": 21,
+    "failed": 0,
+    "cancelled": 0
+  }
+}
