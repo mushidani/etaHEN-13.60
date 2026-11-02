@@ -6,6 +6,15 @@ This build fixes the PS4 launch-context issue on **retail PS5 firmware 13.60** t
 
 > This PS4 game or demo isn't playable on PS5.
 
+[![Downloads](https://img.shields.io/github/downloads/mushidani/etaHEN-13.60/total?label=Downloads)](https://github.com/mushidani/etaHEN-13.60/releases/latest)
+[![Latest Release](https://img.shields.io/github/v/release/mushidani/etaHEN-13.60?label=Latest%20Release)](https://github.com/mushidani/etaHEN-13.60/releases/latest)
+
+## Download
+
+[⬇️ Download Latest Release](https://github.com/mushidani/etaHEN-13.60/releases/latest)
+
+[⬇️ Direct ELF Download](https://github.com/mushidani/etaHEN-13.60/releases/latest/download/etaHEN-13.60-working-aaf921e.elf)
+
 ## What was fixed
 
 The original etaHEN 2.5B Unified build bundled **kstuff-lite v1.11**.
